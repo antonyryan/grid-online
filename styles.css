@@ -1,0 +1,43 @@
+
+/* Estilo para ocultar a caixa de logs */
+.hidden {
+    display: none;
+}
+/* Estilo para a caixa de logs */
+#log-box {
+    position: fixed; /* Fixa a posição na tela */
+    bottom: 10px; /* Distância de 10px do fundo */
+    left: 10px; /* Distância de 10px da esquerda */
+    background-color: rgba(0, 0, 0, 0.7); /* Fundo semi-transparente */
+    color: rgb(0, 0, 0); /* Texto branco */
+    padding: 10px; /* Espaçamento interno */
+    font-family: Arial, sans-serif; /* Fonte */
+    border-radius: 5px; /* Bordas arredondadas */
+    width: 150px; /* Largura fixa */
+    max-height: 120px; /* Altura máxima (inclui padding) */
+    box-sizing: border-box; /* Inclui padding no cálculo da altura */
+    z-index: 1000; /* Garante que fique acima de outros elementos */
+}
+
+#log-content {
+    max-height: 100px; /* Altura máxima do conteúdo */
+    overflow-y: auto; /* Habilita a barra de rolagem vertical */
+    font-size: 12px; /* Tamanho da fonte */
+    line-height: 1.4; /* Espaçamento entre linhas */
+    color: #ccc; /* Cor do texto */
+    white-space: pre-wrap; /* Preserva quebras de linha */
+}
+
+/* Estilo da barra de rolagem */
+#log-content::-webkit-scrollbar {
+    width: 8px;
+}
+
+#log-content::-webkit-scrollbar-thumb {
+    background-color: #666;
+    border-radius: 4px;
+}
+
+#log-content::-webkit-scrollbar-track {
+    background-color: #333;
+}
