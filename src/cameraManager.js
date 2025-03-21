@@ -16,18 +16,18 @@ export function setupCamera() {
 }
 
 // Função para atualizar a posição da câmera na tela
-export function updateCameraPositionUI(camera) {
-    const cameraPosition = camera.position;
-    const cameraX = document.getElementById('camera-x');
-    const cameraY = document.getElementById('camera-y');
-    const cameraZ = document.getElementById('camera-z');
-
-    if (cameraX && cameraY && cameraZ) {
-        cameraX.textContent = cameraPosition.x.toFixed(2);
-        cameraY.textContent = cameraPosition.y.toFixed(2);
-        cameraZ.textContent = cameraPosition.z.toFixed(2);
-    }
-}
+// export function updateCameraPositionUI(camera) {
+//     const cameraPosition = camera.position;
+//     const cameraX = document.getElementById('camera-x');
+//     const cameraY = document.getElementById('camera-y');
+//     const cameraZ = document.getElementById('camera-z');
+//
+//     if (cameraX && cameraY && cameraZ) {
+//         cameraX.textContent = cameraPosition.x.toFixed(2);
+//         cameraY.textContent = cameraPosition.y.toFixed(2);
+//         cameraZ.textContent = cameraPosition.z.toFixed(2);
+//     }
+// }
 
 // Posições fixas da câmera
 export const cameraPositions = [

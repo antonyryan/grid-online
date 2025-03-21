@@ -1,15 +1,14 @@
 // three.js
-import React,{useRef, useEffect, useState} from 'react';
-import { setupCamera, updateCameraPositionUI, setupCameraControls } from '../cameraManager.js';
-import { initializeLogBox } from '../uiManager.js';
-import { GridDimensions, generateHeights, heights, createIsometricGrid } from '../gridManager.js';
-import { createEnemy } from '../enemy.js';
-import { createCharacter } from '../player.js';
+import React, {useEffect, useRef, useState} from 'react';
+import {setupCamera, setupCameraControls} from '../cameraManager.js';
+import {createIsometricGrid, GridDimensions} from '../gridManager.js';
+import {createEnemy} from '../enemy.js';
 import * as THREE from "three";
-import { OrbitControls } from 'three/examples/jsm/controls/OrbitControls';
-import {FBXLoader} from "three/addons";
-import {Renderer} from "../stylized/reactstyles";
+import {OrbitControls} from 'three/examples/jsm/controls/OrbitControls';
+import {Renderer, RendererContainer} from "../stylized/reactstyles";
 import * as TWEEN from "@tweenjs/tween.js";
+import {CameraPos} from "./camerapos";
+import {LogResponse} from "./logresponse";
 
 export const ThreeRenderer = () => {
 // Configuração básica da cena Three.js
@@ -17,8 +16,10 @@ export const ThreeRenderer = () => {
     const scene = useRef(null);
     const camera = useRef(null);
     const renderer  = useRef(null)// Configura a câmera usando o cameraManager.js
+    const controls = useRef(null);
     setupCameraControls(camera.current); // Configura os controles de câmera (Q e E)
     const [tiles, setTiles] = useState([]);
+    const [campos, setCamPos] = useState({x: 0, y: 0,z:0});
     useEffect(() => {
         if (TRenderer.current) {
             const container = TRenderer.current;
@@ -29,6 +30,7 @@ export const ThreeRenderer = () => {
             camera.current = setupCamera();
             const light = new THREE.AmbientLight(0xaaaaaa);
             scene.current.add(light);
+
             setTiles(createIsometricGrid(
                 scene.current, // Certifique-se de que "scene" é uma instância válida de THREE.Scene
                 GridDimensions.rows,
@@ -39,13 +41,18 @@ export const ThreeRenderer = () => {
             renderer.current = new THREE.WebGLRenderer({antialias: true});
             renderer.current.setSize(width,height);
             container.appendChild(renderer.current.domElement);
-            const controls = new OrbitControls(camera.current, renderer.current.domElement);
-            controls.enableDamping = true; // Suaviza o movimento da câmera
-            controls.dampingFactor = 0.25;
-            controls.screenSpacePanning = true; // Permite mover a câmera no espaço da tela
-            controls.minDistance = 50; // Distância mínima de zoom
-            controls.maxDistance = 500; // Distância máxima de zoom
-            controls.maxPolarAngle = Math.PI / 2;
+            if (camera.current instanceof THREE.Camera) {
+                renderer.current.render(scene.current, camera.current);
+            } else {
+                console.error("Camera is invalid:", camera);
+            }
+            controls.current = new OrbitControls(camera.current, renderer.current.domElement);
+            controls.current.enableDamping = true; // Suaviza o movimento da câmera
+            controls.current.dampingFactor = 0.25;
+            controls.current.screenSpacePanning = true; // Permite mover a câmera no espaço da tela
+            controls.current.minDistance = 50; // Distância mínima de zoom
+            controls.current.maxDistance = 500; // Distância máxima de zoom
+            controls.current.maxPolarAngle = Math.PI / 2;
             animate();
         }
     },[TRenderer])
@@ -58,7 +65,7 @@ export const ThreeRenderer = () => {
 
 // Cria o grid isométrico
     // Adicionando OrbitControls para mover a câmera com o mouse
-     // Limita o ângulo polar máximo
+    // Limita o ângulo polar máximo
 
 // Variáveis para controle de interação
     const raycaster = new THREE.Raycaster();
@@ -76,7 +83,6 @@ export const ThreeRenderer = () => {
     let pathTiles = []; // Tiles do caminho
 
 // Adicionando FBXLoader para carregar o modelo 3D
-    const fbxLoader = new FBXLoader();
     let mixer; // Variável para o mixer de animações
 
 // Função para desmarcar o tile selecionado
@@ -251,8 +257,14 @@ export const ThreeRenderer = () => {
             }
         }
     }
-
-// Adiciona os event listeners para cliques e movimento do mouse
+    const updateCameraPosition =() => {
+        let cameraPosition = camera.current.position;
+        let x = cameraPosition.x.toFixed(2);
+        let y = cameraPosition.y.toFixed(2);
+        let z = cameraPosition.z.toFixed(2);
+        setCamPos({x:Number(x), y:Number(y),z:Number(z)});
+    }
+    // Adiciona os event listeners para cliques e movimento do mouse
 //     window.addEventListener('click', onMouseClick, false);
 //     window.addEventListener('mousemove', onMouseMove, false);
 //
@@ -264,11 +276,10 @@ export const ThreeRenderer = () => {
         requestAnimationFrame(animate);
 
         // Atualiza os controles da câmera
-        controls.update();
+        controls.current.update();
 
         // Atualiza a posição da câmera na tela
-        updateCameraPositionUI(camera);
-
+        updateCameraPosition();
         // Atualiza o mixer de animações
         if (mixer) mixer.update(0.01);
 
@@ -276,24 +287,13 @@ export const ThreeRenderer = () => {
         TWEEN.update();
 
         // Renderiza a cena
-        renderer.current.render(scene, camera);
+        renderer.current.render(scene.current, camera.current);
     }
     return(
-        <Renderer>
-        <div ref={TRenderer}>
-        <div id="camera-info">
-            Camera Position:<br/>
-            X: <span id="camera-x">0.00</span><br/>
-            Y: <span id="camera-y">0.00</span><br/>
-            Z: <span id="camera-z">0.00</span>
-        </div>
-        <button id="toggle-log" style="position: absolute; bottom: 180px; left: 10px; z-index: 10;">
-            Mostrar Logs
-        </button>
-        <div id="log-box">
-            <h3>Logs do Console</h3>
-            <div id="log-content"></div>
-        </div>
-    </div>
-        </Renderer>)
+        <RendererContainer>
+            <CameraPos x={campos.x} y={campos.y} z={campos.z} />
+            <Renderer ref={TRenderer}/>
+            <LogResponse/>
+        </RendererContainer>
+    )
 }
